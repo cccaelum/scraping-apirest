@@ -1,0 +1,32 @@
+# Obtener todas las noticias 
+GET http://localhost:3001/noticias
+
+###
+
+# Obtener una noticia por su indice 
+GET http://localhost:3001/noticias/1
+
+###
+
+# Agregar una nueva noticia 
+POST http://localhost:3001/noticias 
+Content-Type: application/json
+
+{
+"titulo": "", "imagen": "", "descripcion": "", "enlace":""
+}
+
+###
+
+# Actualizar una noticia existente 
+PUT http://localhost:3001/noticias/0 
+Content-Type: application/json
+
+{
+"titulo": "El Gobierno contraataca y carga contra los barones del PP por pedir más dinero pese a dejar fondos estatales sin ejecutar", "imagen": "", "descripcion": "", "enlace":""
+}
+
+###
+
+# Eliminar una noticia 
+DELETE http://localhost:3001/noticias/1

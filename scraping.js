@@ -1,100 +1,55 @@
-const axios = require('axios')
-const cheerio = require('cheerio')
-const express = require('express')
-const app = express()
-const fs = require('fs')
+const express = require('express');
+const axios = require('axios');
+const cheerio = require('cheerio');
+const fs = require('fs');
 
-const url = 'https://elpais.com/ultimas-noticias/'
+const app = express();
+const port = 3002;
 
-app.get("/", async (req, res) => {
-    try {
-      const response = await axios.get(url)
-      const html = response.data
-      const $ = cheerio.load(html)
+app.get('/', async (req, res) => {
+  try {
+    const url = 'https://elpais.com/ultimas-noticias/'; 
 
-      //const h2 = $("header.c_h h2").text()
-     // const p = $("p.c_d").text()
-     // console.log(p)
-      
+    // Realizar la solicitud HTTP
+    const response = await axios.get(url);
+    const html = response.data;
+    const $ = cheerio.load(html);
 
-      
+    // Obtener los elementos dentro de .b-st_a
+    const elementos = $('.b-st_a article.c.c-d.c--m');
 
-      const links = []
-      const titulos = []
-      $("article.c c-d c--m ").each((i,elemento) => {
-        const link = $(elemento).find('a').attr("href")
-        const titulo = $(elemento).find('h2.c_t').text()
-        links.push(link)
-        titulos.push(titulo)
-        console.log(titulos)
-      })    
+    // Lista para almacenar los objetos
+    const noticias = [];
 
-    let noticias = []
+    // Iterar sobre los elementos y realizar scraping en cada artículo
+    elementos.each((_, elemento) => {
+      const titulo = $(elemento).find('header.c_h').text().trim();
+      const imagen = $(elemento).find('img').attr('src');
+      const descripcion = $(elemento).find('p.c_d').text().trim();
+      const enlace = $(elemento).find('a').attr('href');
+
+      // Crear objeto con los datos
       const noticia = {
-        titulo: titulos,
-        imagen: "",
-        descripcion: "",
-        enlace: links,
+        titulo: titulo,
+        imagen: imagen,
+        descripcion: descripcion,
+        enlace: enlace,
       };
-      noticias.push(noticia)
 
-fs.writeFileSync('noticias.json', JSON.stringify(noticias, null, 2))
+      // Agregar noticia a la lista
+      noticias.push(noticia);
+    });
 
-
-    } catch (error) {
-        console.error(`el error es el ${error}`)
-        res.status(500).send(`Error interno ${error}`)
-      }
-     })
-     
-
-app.listen(3001, () => {
-
-    console.log('express esta escuchando en el puerto http://localhost:3001')
-
-})
-/*
-async function scrapingLinks(link) {
-    try {
-      const response = await axios.get(`https://es.wikipedia.org${link}`)
-      const html = response.data
-      const $ = cheerio.load(html)
-   
-   
-      const h2 = $("h2").text()
-      const images = []
-      $("img").each((i, elemento) => {
-        const src = $(elemento).attr("src")
-        images.push(src)
-      })
-      const texts = []
-      $("p").each((i, elemento) => {
-        const text = $(elemento).text()
-        texts.push(text)
-      })
-     
-      return {h2, images, texts}
-   
-   
-    } catch (error) {
-      console.error(`el error es el ${error}`)
-      res.status(500).send(`Error interno ${error}`)
-    }
-}
-*/
-
-
-/*
-function leerDatos() {
-    try {
-      const data = fs.readFileSync('noticias.json', 'utf-8');
-      noticias = JSON.parse(data);
-    } catch (error) {
-      console.error('Error al leer el archivo noticias.json:', error.message);
-    }
-  }
-  
-  
-  function guardarDatos() {
+    // Escribir la lista de noticias en un archivo JSON
     fs.writeFileSync('noticias.json', JSON.stringify(noticias, null, 2));
-  }*/
+
+    res.send('Scraping completado. Datos guardados en noticias.json');
+  } catch (error) {
+    console.error('Error al realizar la solicitud:', error.message);
+    res.status(500).send('Error interno del servidor');
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Servidor escuchando en http://localhost:${port}`);
+});
